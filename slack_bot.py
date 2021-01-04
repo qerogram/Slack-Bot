@@ -13,6 +13,7 @@ class SlackBot() :
     Id_Of_Channels = {}
 
     def __init__(self, channel) :
+        self.Id_Of_Channels = {}
         self.channels = channel
         self.slack_token = self.get_token()
         self.headers['Authorization'] = f"Bearer {self.slack_token}"
@@ -82,19 +83,9 @@ class SlackBot() :
             
             else :
                 for msg in res.json()['messages'] :
-                    if f"{Message}" in msg['text'] :
+                    if f"{Message}" in msg['text'].replace("&amp;", "&") :
                         return True
                 return False
-
-class SubSlackModule() :
-    def __init__(self) : 
-        pass
-
-    def sendMessage(self, Channel, Message) :
-        if Message != None or Message != "" :
-            Bot = SlackBot([Channel])
-            Bot.sendMessage(Message)
-
 
 if __name__ == "__main__" :
     # Example : Constructor(Slack Channel)
