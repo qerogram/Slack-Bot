@@ -22,7 +22,7 @@ class SlackBot() :
 
         print("[+] Success : Find Channels")        
 
-        self.getChannelList()
+        # self.getChannelList()
 
     def get_token(self) :
         return open("token.txt","r").read()
@@ -47,6 +47,14 @@ class SlackBot() :
         return len(channels)
     
     def sendMessage(self, Message) :
+        isDup = self.isDuplicated(Message)
+        if isDup == True : 
+            print(f"[System] Duplicated Link : {Message}")
+            return
+        elif isDup == -1 : 
+            print(f"[System] Error : {Message}")
+            return
+
         URL = "https://slack.com/api/chat.postMessage"
 
         for Channel in self.Id_Of_Channels.values() :
@@ -59,9 +67,36 @@ class SlackBot() :
                 print(f"[+] Success : Send Message({Message}) to {Channel}")
             else :
                 print(f"[+] Fail : Send Message({Message}) to {Channel}")
+    
+    def isDuplicated(self, Message) :
+        URL = "https://slack.com/api/conversations.history"
+
+        for Channel in self.Id_Of_Channels.values() :
+            data = self.params
+            data['channel'] = Channel
+            data['query'] = Message
+            res = requests.get(URL, params=data, headers=self.headers)
+            
+            if res.json()['ok'] == False : 
+                return -1 # Error
+            
+            else :
+                for msg in res.json()['messages'] :
+                    if f"{Message}" in msg['text'] :
+                        return True
+                return False
+
+class SubSlackModule() :
+    def __init__(self) : 
+        pass
+
+    def sendMessage(self, Channel, Message) :
+        if Message != None or Message != "" :
+            Bot = SlackBot([Channel])
+            Bot.sendMessage(Message)
+
 
 if __name__ == "__main__" :
     # Example : Constructor(Slack Channel)
     # if occured not_in_channel, you invite bot app in channel like @botname
-    Bot = SlackBot(['hack_news'])
-    Bot.sendMessage("testMessage")
+    pass
